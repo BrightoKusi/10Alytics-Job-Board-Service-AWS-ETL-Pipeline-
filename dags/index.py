@@ -10,7 +10,7 @@ from utils.help import retrieve_api_data_and_upload_to_s3, transform_and_upload_
 
 
 with DAG(
-    "ordernow",
+    "Jobs_data",
     default_args={
         "depends_on_past": False,
         "email": ["dataengineering@10alytics.org"],
