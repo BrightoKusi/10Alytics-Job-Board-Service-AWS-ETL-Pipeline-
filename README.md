@@ -50,7 +50,7 @@ This project also includes an Airflow Directed Acyclic Graph (DAG) for orchestra
 - copy_to_redshift >> end_execution: Finish the execution.
 
 ### DAG Dependencies
-- The DAG ordernow depends on the successful completion of each task before proceeding to the next task.
+- The DAG jobs_data depends on the successful completion of each task before proceeding to the next task.
 - If a task fails, it will retry once after a delay of 5 minutes (retry_delay).
 
 ### How to Run
