@@ -31,7 +31,7 @@ Establishes a connection to the Redshift data warehouse and creates tables neces
 This project also includes an Airflow Directed Acyclic Graph (DAG) for orchestrating the data pipeline using scheduled tasks.
 
 ### DAG Configuration
-- DAG Name: ordernow
+- DAG Name: Jobs data
 - Description: 10Alytics Job Boards Data
 - Schedule: Runs daily (@daily)
 - Start Date: January 7, 2024
