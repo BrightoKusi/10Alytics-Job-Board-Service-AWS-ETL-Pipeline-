@@ -7,7 +7,7 @@ import json
 import requests
 import psycopg2
 
-from utils.help import create_bucket, retrieve_api_data_and_upload_to_s3, transform_and_upload_to_s3
+from utils.help import create_bucket, retrieve_api_data_and_upload_to_s3, transform_and_upload_to_s3, copy_from_s3_to_redshift
 from utils.constants import raw_file_path, transformed_file_path, dev_schema
 from sql_statements.create import transformed_jobs_data
 
@@ -69,3 +69,7 @@ print(f'----------------------------{query[:50]}')
 cursor.execute(query)
 dwh_conn.commit()
 print('created succesfully')
+
+
+#========================Copy the data from s3 into redshift
+copy_from_s3_to_redshift()

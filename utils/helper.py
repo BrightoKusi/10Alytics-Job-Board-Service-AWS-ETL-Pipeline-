@@ -20,8 +20,17 @@ region = config['AWS']['region']
 role = config['AWS']['role']
 
 
+['DWH']
+dwh_host = config['DWH']['host']
+dwh_user = config['DWH']['user']
+dwh_password = config['DWH']['password']
+dwh_database = config['DWH']['database']
+
+
 source_bucket = raw_bucket_name
 destination_bucket = transformed_bucket_name
+
+from utils.constants import raw_file_path, transformed_file_path, dev_schema, transformed_table
 
 
 def create_bucket(access_key = None, secret_key = None, bucket_name = None, region = None):
@@ -139,3 +148,44 @@ def transform_and_upload_to_s3(access_key, secret_key, raw_bucket_name, raw_file
         print("Data transformed and uploaded to S3 as CSV")
     except Exception as e:
         print('Error:', e)
+
+
+
+
+def copy_from_s3_to_redshift():
+#==Create connection to redshift
+    conn_details = {'host':dwh_host, 'database': dwh_database, 'user':dwh_user, 'password': dwh_password}
+    dwh_conn = rdc.connect(**conn_details)
+    cursor = dwh_conn.cursor()
+    print('connection successful')
+    
+    #Query for copying from s3 to redshift
+    query = f'''
+            COPY {dev_schema}.{transformed_table}
+            FROM 's3://{transformed_bucket_name}/{transformed_file_path}'
+            IAM_ROLE '{role}'
+            DELIMITER ',' 
+            IGNOREHEADER 1
+            FORMAT AS CSV;
+        '''
+    try:
+        cursor.execute(query)
+        dwh_conn.commit()
+        print('Data copied successfully')
+    except Exception as e:
+        print(e)
+        cursor.close()
+        dwh_conn.close()
+
+
+
+
+
+
+
+
+
+
+
+
+
