@@ -20,8 +20,11 @@ region = config['AWS']['region']
 role = config['AWS']['role']
 
 
+source_bucket = raw_bucket_name
+destination_bucket = transformed_bucket_name
 
-def create_bucket(access_key, secret_key, bucket_name, region):
+
+def create_bucket(access_key = None, secret_key = None, bucket_name = None, region = None):
     '''
     Description:
         This function creates an Amazon S3 bucket in the specified AWS region using the provided access key, secret key, bucket name, and region information.
@@ -91,3 +94,48 @@ def retrieve_api_data_and_upload_to_s3(access_key, secret_key, api_key, raw_buck
         
     except Exception as e:
         print('There was an error: ', e)
+
+
+
+
+def transform_and_upload_to_s3(access_key, secret_key, raw_bucket_name, raw_file_path, transformed_bucket_name, transformed_file_path):
+    try:
+        # Establishing a connection to Amazon S3
+        s3 = boto3.client('s3', aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+
+        # Retrieving JSON data from the specified S3 bucket and file
+        response = s3.get_object(Bucket=raw_bucket_name, Key=raw_file_path)
+        data = response['Body'].read().decode('utf-8')
+
+        # Processing each line of the data as JSON and constructing a list of JSON objects
+        all_data = [json.loads(line) for line in data.split('\n') if line.strip()]
+    
+
+        # Creating a DataFrame from the list of JSON objects
+        df = pd.DataFrame(all_data)
+        
+        # Assuming 'data' key is present in each dictionary within all_data list
+        df = pd.concat([pd.json_normalize(entry['data']) for entry in all_data], ignore_index=True)
+
+        # Filtering and renaming columns
+        desired_columns = ['job_id', 'job_employment_type', 'job_title', 'job_apply_link',
+                           'job_description', 'job_city', 'job_country', 'job_posted_at_timestamp',
+                           'employer_website', 'employer_company_type']
+        df = df[desired_columns]
+
+        # Convert Unix timestamp column to datetime
+        df['job_posted_at_timestamp'] = pd.to_datetime(df['job_posted_at_timestamp'], unit='s')
+        
+        # Convert DataFrame to CSV format in memory
+        csv_buffer = io.StringIO()
+        df.to_csv(csv_buffer, index=False)
+
+        # Initialize S3 client for destination bucket
+        s3_dest = boto3.client('s3', aws_access_key_id=access_key, aws_secret_access_key=secret_key)
+
+        # Upload CSV data to the destination S3 bucket
+        s3_dest.put_object(Bucket=transformed_bucket_name, Key=transformed_file_path, Body=csv_buffer.getvalue().encode('utf-8'))
+
+        print("Data transformed and uploaded to S3 as CSV")
+    except Exception as e:
+        print('Error:', e)

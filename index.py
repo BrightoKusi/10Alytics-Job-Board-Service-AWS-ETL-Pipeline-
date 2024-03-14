@@ -7,8 +7,8 @@ import json
 import requests
 import psycopg2
 
-from utils.help import create_bucket, retrieve_api_data_and_upload_to_s3
-from utils.constants import raw_file_path
+from utils.help import create_bucket, retrieve_api_data_and_upload_to_s3, transform_and_upload_to_s3
+from utils.constants import raw_file_path, transformed_file_path
 
 config = configparser.ConfigParser()
 config.read('.env')
@@ -36,3 +36,7 @@ retrieve_api_data_and_upload_to_s3(access_key, secret_key, api_key, raw_bucket_n
 
 #========== Create new bucket for transformed data
 create_bucket(access_key=access_key, secret_key=secret_key, bucket_name=transformed_bucket_name, region=region)
+
+
+#========== copy data from raw_data_bucket, transform and load to transformed_data_bucket
+transform_and_upload_to_s3(access_key, secret_key, raw_bucket_name, raw_file_path, transformed_bucket_name, transformed_file_path)
