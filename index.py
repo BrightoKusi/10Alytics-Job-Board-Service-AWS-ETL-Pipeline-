@@ -9,6 +9,7 @@ import psycopg2
 
 from utils.help import create_bucket, retrieve_api_data_and_upload_to_s3, transform_and_upload_to_s3
 from utils.constants import raw_file_path, transformed_file_path, dev_schema
+from sql_statements.create import transformed_jobs_data
 
 config = configparser.ConfigParser()
 config.read('.env')
@@ -60,3 +61,11 @@ query  = f'CREATE SCHEMA IF NOT EXISTS {dev_schema}'
 cursor.execute(query)
 dwh_conn.commit()
 print('created')
+
+
+#========================== Create the table for the database in the dev schema
+query = transformed_jobs_data
+print(f'----------------------------{query[:50]}')
+cursor.execute(query)
+dwh_conn.commit()
+print('created succesfully')
